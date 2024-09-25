@@ -3,25 +3,14 @@ import helpers
 from django.db import models
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
+from .utils import AccessRequirement, PublishStatus, LessonType
+from django.core.exceptions import ValidationError
+from django_summernote.fields import SummernoteTextField
 
 helpers.cloudinary_init()
 
-class AccessRequirement(models.TextChoices):
-    ANYONE = "any", "Anyone"
-    EMAIL_REQUIRED = "email", "Email required"
-
-class PublishStatus(models.TextChoices):
-    PUBLISHED = "publish", "Published"
-    COMING_SOON = "soon", "Coming Soon"
-    DRAFT = "draft", "Draft"
-
-
 def handle_upload(instance, filename):
     return f"{filename}"
-
-# from courses.models import Course
-# Course.objects.all() -> list out all courses
-# Course.objects.first() -> first row of all courses
 
 def generate_public_id(instance, *args, **kwargs):
     title = instance.title
@@ -58,14 +47,11 @@ def get_display_name(instance, *args, **kwargs):
     model_name = model_class.__name__
     return f"{model_name} Upload"
 
-# get_thumbnail_display_name = lambda instance: get_display_name(instance, is_thumbnail=True)
 
 class Course(models.Model):
     title = models.CharField(max_length=120)
     description = models.TextField(blank=True, null=True)
-    # uuid = models.UUIDField(default=uuid.uuid1, unique=True)
     public_id = models.CharField(max_length=130, blank=True, null=True, db_index=True)
-    # image = models.ImageField(upload_to=handle_upload, blank=True, null=True)
     image = CloudinaryField(
         "image", 
         null=True, 
@@ -86,6 +72,9 @@ class Course(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+    
     def save(self, *args, **kwargs):
         # before save
         if self.public_id == "" or self.public_id is None:
@@ -136,24 +125,18 @@ class Course(models.Model):
     - Status: Published, Coming Soon, Draft
 """
 
-# Lesson.objects.all() # lesson queryset -> all rows
-# Lesson.objects.first()
-# course_obj = Course.objects.first()
-# course_qs = Course.objects.filter(id=course_obj.id)
-# Lesson.objects.filter(course__id=course_obj.id)
-# course_obj.lesson_set.all()
-# lesson_obj = Lesson.objects.first()
-# ne_course_obj = lesson_obj.course
-# ne_course_lessons = ne_course_obj.lesson_set.all()
-# lesson_obj.course_id
-# course_obj.lesson_set.all().order_by("-title")
-
 class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     # course_id 
     public_id = models.CharField(max_length=130, blank=True, null=True, db_index=True)
     title = models.CharField(max_length=120)
     description = models.TextField(blank=True, null=True)
+    lesson_type = models.CharField(
+        max_length=10,
+        choices=LessonType.choices,
+        default=LessonType.VIDEO
+    )
+    content = SummernoteTextField(blank=True, null=True, help_text="Content for blog/text lessons")
     thumbnail = CloudinaryField("image", 
                 public_id_prefix=get_public_id_prefix,
                 display_name=get_display_name,
@@ -180,6 +163,9 @@ class Lesson(models.Model):
     class Meta:
         ordering = ['order', '-updated']
 
+    def __str__(self):
+        return self.title
+    
     def save(self, *args, **kwargs):
         # before save
         if self.public_id == "" or self.public_id is None:
@@ -213,7 +199,7 @@ class Lesson(models.Model):
     
     def get_thumbnail(self):
         width = 382
-        if self.thumbnail:
+        if self.lesson_type == LessonType.VIDEO and self.thumbnail:
             return helpers.get_cloudinary_image_object(
                 self, 
                 field_name='thumbnail',
@@ -221,7 +207,7 @@ class Lesson(models.Model):
                 as_html=False,
                 width=width
             )
-        elif self.video:
+        elif self.lesson_type == LessonType.VIDEO and self.video:
             return helpers.get_cloudinary_image_object(
             self, 
             field_name='video',
@@ -229,4 +215,11 @@ class Lesson(models.Model):
             as_html=False,
             width=width
         )
-        return 
+        return None
+    
+    def clean(self):
+        super().clean()
+        if self.lesson_type == LessonType.VIDEO and not self.video:
+            raise ValidationError("Video field is required for video lessons.")
+        if self.lesson_type == LessonType.BLOG and not self.content:
+            raise ValidationError("Content field is required for blog/text lessons.")

@@ -26,9 +26,7 @@
     function renderAllVideos() {
         const videoPlayerClassName = 'cfe-video';
         const videoPlayerElements = document.getElementsByClassName(videoPlayerClassName);
-        console.log(videoPlayerElements);
         for (let el of videoPlayerElements) {
-            console.log(el);
             renderVideoElement(el);
         }
     }

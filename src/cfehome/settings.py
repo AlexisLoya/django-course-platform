@@ -58,6 +58,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -67,17 +68,18 @@ INSTALLED_APPS = [
     # third party
     "django_htmx",
     "tailwind",
-    "theme", # django-tailwind theme app
+    "theme",
+    "django_summernote",
     # internal
     "courses",
     "emails"
 ]
-
-TAILWIND_APP_NAME="theme" # django-tailwind theme app
+TAILWIND_APP_NAME="theme"
 INTERNAL_IPS = [
     "0.0.0.0",
     "127.0.0.1",
 ]
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -88,6 +90,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 if DEBUG:
@@ -169,6 +172,7 @@ STATIC_URL = "static/"
 # nginx
 MEDIA_URL = "media/"
 MEDIA_ROOT = LOCAL_CDN / "media"
+STATIC_ROOT = LOCAL_CDN
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -180,3 +184,76 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CLOUDINARY_CLOUD_NAME = config("CLOUDINARY_CLOUD_NAME", default="")
 CLOUDINARY_PUBLIC_API_KEY = config("CLOUDINARY_PUBLIC_API_KEY", default="")
 CLOUDINARY_SECRET_API_KEY= config("CLOUDINARY_SECRET_API_KEY")
+
+# tinymce
+SUMMERNOTE_THEME = 'bs4' 
+SUMMERNOTE_CONFIG = {
+    'iframe': False,  # Use inline mode (default is True)
+    'summernote': {
+        'width': '100%',
+        'height': '800',
+        'toolbar': [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']]
+        ],
+        'popover': {
+            'image': [
+                ['image', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']],
+                ['float', ['floatLeft', 'floatRight', 'floatNone']],
+                ['remove', ['removeMedia']]
+            ],
+            'link': [
+                ['link', ['linkDialogShow', 'unlink']]
+            ],
+            'table': [
+                ['add', ['addRowDown', 'addRowUp', 'addColLeft', 'addColRight']],
+                ['delete', ['deleteRow', 'deleteCol', 'deleteTable']],
+            ],
+            'air': [
+                ['color', ['color']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['para', ['ul', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture']]
+            ],
+        },
+    'attachment_disable_upload': True,
+    }
+}
+
+
+# settings.py
+
+JAZZMIN_SETTINGS = {
+    'site_title': 'My Course Platform Admin',
+
+    'site_header': 'Course Platform',
+
+    'welcome_sign': 'Welcome to the Course Platform Admin',
+
+    'copyright': 'Acme Inc',
+
+    'search_model': 'auth.User',
+
+    'user_avatar': None,
+
+    'topmenu_links': [
+        {'name': 'Home',  'url': 'admin:index', 'permissions': ['auth.view_user']},
+        {'model': 'auth.User'},
+        {'app': 'courses'},
+    ],
+
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'auth.user': 'fas fa-user',
+        'auth.Group': 'fas fa-users',
+        'courses.Course': 'fas fa-book',
+        'courses.Lesson': 'fas fa-chalkboard-teacher',
+    },
+
+    'related_modal_active': True,
+}

@@ -2,12 +2,12 @@ import helpers
 from cloudinary import CloudinaryImage
 from django.contrib import admin
 from django.utils.html import format_html
-# Register your models here.
 from .models import Course, Lesson
-
+from .forms import LessonInlineForm
 
 class LessonInline(admin.StackedInline):
     model = Lesson
+    form = LessonInlineForm
     readonly_fields = [
         'public_id', 
         'updated', 
@@ -15,7 +15,15 @@ class LessonInline(admin.StackedInline):
         'display_video',
     ]
     extra = 0
-
+    
+    class Media:
+        js = (
+            'admin/js/vendor/jquery/jquery.js',
+            'admin/js/jquery.init.js',
+            'js/lesson_inline.js',
+        )
+        
+        
     def display_image(self, obj, *args, **kwargs):
         url = helpers.get_cloudinary_image_object(
             obj, 
@@ -55,6 +63,3 @@ class CourseAdmin(admin.ModelAdmin):
         return format_html(f"<img src={url} />")
 
     display_image.short_description = "Current Image"
-
-
-# admin.site.register(Course, CourseAdmin)

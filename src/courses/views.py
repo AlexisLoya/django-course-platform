@@ -1,7 +1,7 @@
 import helpers
 from django.http import Http404, JsonResponse
 from django.shortcuts import render, redirect
-
+from .utils import PublishStatus, LessonType
 from . import services
 
 def course_list_view(request):
@@ -37,28 +37,45 @@ def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs)
     )
     if lesson_obj is None:
         raise Http404
+
     email_id_exists = request.session.get('email_id')
     if lesson_obj.requires_email and not email_id_exists:
         print(request.path)
         request.session['next_url'] = request.path
         return render(request, "courses/email-required.html", {})
-    # template_name = "courses/purchase-required.html"
+
+    # Default template is 'lesson-coming-soon.html'
     template_name = "courses/lesson-coming-soon.html"
     context = {
         "object": lesson_obj
     }
-    if not lesson_obj.is_coming_soon and lesson_obj.has_video:
+
+    if not lesson_obj.is_coming_soon and lesson_obj.status == PublishStatus.PUBLISHED:
         """
-        Lesson is published
-        Video is available
-        go forward
+        Lesson is published and not coming soon
+        Render appropriate template based on lesson type
         """
-        template_name = "courses/lesson.html"
-        video_embed_html = helpers.get_cloudinary_video_object(
-            lesson_obj, 
-            field_name='video',
-            as_html=True,
-            width=1250
-        )
-        context['video_embed'] = video_embed_html
+        if lesson_obj.lesson_type == LessonType.VIDEO:
+            if lesson_obj.has_video:
+                # Render video lesson template
+                template_name = "courses/lesson.html"
+                video_embed_html = helpers.get_cloudinary_video_object(
+                    lesson_obj,
+                    field_name='video',
+                    as_html=True,
+                    width=1250
+                )
+                context['video_embed'] = video_embed_html
+            else:
+                # Video lesson without a video file
+                template_name = "courses/lesson-coming-soon.html"
+
+        elif lesson_obj.lesson_type == LessonType.BLOG:
+            # Render blog/text lesson template
+            template_name = "courses/blog_lesson.html"
+            # If you need to add additional context, do it here
+        else:
+            # Handle unknown lesson types
+            template_name = "courses/lesson-coming-soon.html"
+
     return render(request, template_name, context)
