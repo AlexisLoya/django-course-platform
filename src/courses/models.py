@@ -136,7 +136,7 @@ class Lesson(models.Model):
         choices=LessonType.choices,
         default=LessonType.VIDEO
     )
-    content = SummernoteTextField(blank=True, null=True, help_text="Content for blog/text lessons")
+    content = SummernoteTextField(default='', help_text="Content for blog/text lessons")
     thumbnail = CloudinaryField("image", 
                 public_id_prefix=get_public_id_prefix,
                 display_name=get_display_name,

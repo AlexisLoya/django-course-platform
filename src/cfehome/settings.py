@@ -12,17 +12,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-from decouple import config # os.environ.get()
-
-
 from decouple import config
+import dj_database_url
+from decouple import config
+import os
 
 BASE_URL = config("BASE_URL", default='http://127.0.0.1:8000')
 # default backend
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config("EMAIL_HOST", cast=str, default=None)
 EMAIL_PORT = config("EMAIL_PORT", cast=str, default='587') # Recommended
-EMAIL_ADDRESS = "hungrypy@gmail.com"
+EMAIL_ADDRESS = config("EMAIL_ADMIN", cast=str, default=None)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", cast=str, default=None)
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", cast=str, default=None)
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=True)  # Use EMAIL_PORT 587 for TLS
@@ -47,17 +47,23 @@ TEMPLATE_DIR = BASE_DIR / "templates"
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-)m9pn5k+cz^l1pos#-_dr@nqcmqtynn1xo9f$b=6uney85a+cl"
+SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
+DAJNGO_BASE_URL = config('DAJNGO_BASE_URL', default=None)
 
-ALLOWED_HOSTS = []
-
-
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "saas-python-base-production.up.railway.app"
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://saas-python-base-production.up.railway.app"
+]
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -65,15 +71,19 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # third party
+]
+THIRD_PARTY_APPS = [
     "django_htmx",
     "tailwind",
     "theme",
     "django_summernote",
-    # internal
+]
+MY_APPS = [
     "courses",
     "emails"
 ]
+INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
+
 TAILWIND_APP_NAME="theme"
 INTERNAL_IPS = [
     "0.0.0.0",
@@ -131,6 +141,19 @@ DATABASES = {
     }
 }
 
+CONN_MAX_AGE = config("CONN_MAX_AGE", cast=int, default=300)
+DATABASE_URL = config("DATABASE_URL", default=None)
+
+
+if DATABASE_URL is not None:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=CONN_MAX_AGE,
+            conn_health_checks=True,
+        )
+    }
+    
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -168,7 +191,6 @@ USE_TZ = True
 
 # whitenoise/nginx
 STATIC_URL = "static/"
-
 # nginx
 MEDIA_URL = "media/"
 MEDIA_ROOT = LOCAL_CDN / "media"
@@ -257,3 +279,9 @@ JAZZMIN_SETTINGS = {
 
     'related_modal_active': True,
 }
+
+# print the static files
+ruta = f"{LOCAL_CDN}/css/dist/"
+for root, dirs, files in os.walk(ruta):
+    for file in files:
+        print(os.path.join(root, file))
