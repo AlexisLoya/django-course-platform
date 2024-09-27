@@ -54,10 +54,13 @@ DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 DAJNGO_BASE_URL = config('DAJNGO_BASE_URL', default=None)
 DJANGO_HOST = config('DJANGO_HOST', default='', cast=str)
 ALLOWED_HOSTS = [
-    DJANGO_HOST
+    DJANGO_HOST,
+    'localhost',
+    '127.0.0.1',
 ]
+
 CSRF_TRUSTED_ORIGINS = [
-    DJANGO_HOST
+    f'https://{DJANGO_HOST}',
 ]
 # Application definition
 
