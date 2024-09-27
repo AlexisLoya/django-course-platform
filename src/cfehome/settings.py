@@ -287,4 +287,4 @@ JAZZMIN_SETTINGS = {
 ruta = f"{LOCAL_CDN}/css/dist/"
 for root, dirs, files in os.walk(ruta):
     for file in files:
-        print(os.path.join(root, file))
+        print(f'FILES:{os.path.join(root, file)}')
