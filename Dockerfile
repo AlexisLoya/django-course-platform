@@ -48,11 +48,6 @@ COPY requirements.txt /tmp/requirements.txt
 # copy the project code into the container's working directory
 COPY ./src /code
 
-# Install npm dependencies
-RUN npm install
-
-# Build TailwindCSS
-RUN npm run build
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
