@@ -62,6 +62,7 @@ ENV DJANGO_DEBUG=${DJANGO_DEBUG}
 # such as:
 
 # whitenoise -> s3
+RUN python manage.py collectstatic --noinput
 
 # set the Django default project name
 ARG PROJ_NAME="cfehome"
@@ -74,7 +75,6 @@ RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
     printf "python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
     printf "python manage.py tailwind install --no-input\n" >> ./paracord_runner.sh && \
     printf "python manage.py tailwind build --no-input\n" >> ./paracord_runner.sh && \
-    printf "python manage.py collectstatic --no-input\n" >> ./paracord_runner.sh && \
     printf "gunicorn ${PROJ_NAME}.wsgi:application --bind \"0.0.0.0:\$RUN_PORT\"\n" >> ./paracord_runner.sh
 
 # make the bash script executable
