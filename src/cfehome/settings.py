@@ -52,14 +52,12 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 DAJNGO_BASE_URL = config('DAJNGO_BASE_URL', default=None)
-
+DJANGO_HOST = config('DJANGO_HOST', default='', cast=str)
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "saas-python-base-production.up.railway.app"
+    DJANGO_HOST
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://saas-python-base-production.up.railway.app"
+    DJANGO_HOST
 ]
 # Application definition
 
