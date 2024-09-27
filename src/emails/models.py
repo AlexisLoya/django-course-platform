@@ -36,4 +36,4 @@ class EmailVerificationEvent(models.Model):
 
 
     def get_link(self):
-        return f"{settings.BASE_URL}/verify/{self.token}/"
+        return f"'https://{settings.DJANGO_HOST}/verify/{self.token}/"
