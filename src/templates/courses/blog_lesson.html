@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>{{ object.title }}</h1>
-<div class="blog-content">
-    {{ object.content|safe }}
+<div class="flex flex-col items-center justify-center min-h-screen">
+    <h1 class="text-3xl font-bold mb-4">{{ object.title }}</h1>
+    <div class="w-full max-w-2xl">
+        {{ object.content|safe }}
+    </div>
 </div>
 {% endblock content %}

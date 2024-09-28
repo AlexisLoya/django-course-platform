@@ -162,6 +162,7 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ['order', '-updated']
+        unique_together = ('course', 'order')
 
     def __str__(self):
         return self.title
@@ -219,6 +220,8 @@ class Lesson(models.Model):
     
     def clean(self):
         super().clean()
+        if Lesson.objects.filter(course=self.course, order=self.order).exclude(pk=self.pk).exists():
+            raise ValidationError(f"already exists a lesson with order {self.order} for this course.")
         if self.lesson_type == LessonType.VIDEO and not self.video:
             raise ValidationError("Video field is required for video lessons.")
         if self.lesson_type == LessonType.BLOG and not self.content:

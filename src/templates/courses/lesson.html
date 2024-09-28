@@ -1,12 +1,41 @@
 {% extends "base.html" %}
 
-
 {% block content %}
-
-
-<h1>{{ object.title }}</h1>
-
-
-{{ video_embed }}
-
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-[120px_1fr] lg:gap-8 mb-4">
+    <!-- Sidebar Navigation -->
+    <div class="flex flex-col items-center">
+        {% for lesson in lessons %}
+        <a href="{{ lesson.get_absolute_url }}" class="flex items-center">
+            <div class="flex flex-col items-center">
+                {% if lesson == object %}
+                <!-- Current Lesson -->
+                <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center">
+                    {{ lesson.order }}
+                </div>
+                {% else %}
+                <!-- Other Lessons -->
+                <div class="w-8 h-8 bg-gray-300 text-black rounded-full flex items-center justify-center">
+                    {{ lesson.order }}
+                </div>
+                {% endif %}
+                {% if not forloop.last %}
+                <!-- Line connecting the dots -->
+                <div class="h-8 w-px bg-gray-400"></div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    <!-- Content of the Lesson -->
+    <div>
+        <h1 class="text-3xl font-bold mb-4">{{ object.title }}</h1>
+        {% if object.lesson_type == 'VIDEO' %}
+            {{ video_embed|safe }}
+        {% elif object.lesson_type == 'BLOG' %}
+            <div class="prose">
+                {{ object.content|safe }}
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock content %}
