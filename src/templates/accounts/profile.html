@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <h2 class="text-2xl font-bold mb-4">Perfil de {{ user.username }}</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="font-semibold">Información de Usuario</h3>
+                {{ u_form.as_p }}
+            </div>
+            <div>
+                <h3 class="font-semibold">Información del Perfil</h3>
+                {{ p_form.as_p }}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-4">Actualizar Perfil</button>
+    </form>
+</div>
+{% endblock %}

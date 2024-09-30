@@ -10,6 +10,7 @@ def login_logout_template_view(request):
     return render(request, "auth/login-logout.html", {})
 
 EMAIL_ADDRESS = settings.EMAIL_ADDRESS
+
 def home_view(request, *args, **kwargs):
     template_name = "home.html"
     # request POST data

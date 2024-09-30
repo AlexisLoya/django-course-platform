@@ -1,5 +1,6 @@
 from django.db.models import Q
-from .models import Course, Lesson, PublishStatus
+from .models.course import Course, Lesson
+from .utils import PublishStatus
 
 
 def get_publish_courses():

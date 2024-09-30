@@ -22,7 +22,6 @@ from django.conf.urls.static import static
 from emails.views import verify_email_token_view, email_token_login_view, logout_btn_hx_view
 from . import views
 
-
 urlpatterns = [
     path("", views.home_view),
     path("login/", views.login_logout_template_view),
@@ -33,6 +32,7 @@ urlpatterns = [
     path("courses/", include("courses.urls")),
     path("admin/", admin.site.urls),
     path('summernote/', include('django_summernote.urls')),
+    path('accounts/', include('accounts.urls')),
 ]
 
 if settings.DEBUG:

@@ -81,12 +81,14 @@ THIRD_PARTY_APPS = [
     "django_summernote",
 ]
 MY_APPS = [
+    "accounts",
     "courses",
     "emails"
 ]
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
 
 TAILWIND_APP_NAME="theme"
+
 INTERNAL_IPS = [
     "0.0.0.0",
     "127.0.0.1",
@@ -135,8 +137,6 @@ WSGI_APPLICATION = "cfehome.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -159,8 +159,6 @@ if DATABASE_URL is not None:
     
 
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -188,9 +186,11 @@ USE_I18N = True
 
 USE_TZ = True
 
+# accounts
+LOGIN_REDIRECT_URL = 'profile'
+LOGOUT_REDIRECT_URL = 'login'
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # whitenoise/nginx
 STATIC_URL = "static/"
@@ -200,8 +200,6 @@ MEDIA_ROOT = LOCAL_CDN / "media"
 STATIC_ROOT = LOCAL_CDN
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
@@ -247,6 +245,7 @@ SUMMERNOTE_CONFIG = {
             ],
         },
     'attachment_disable_upload': True,
+    'disable_upload': True, 
     }
 }
 
@@ -282,9 +281,3 @@ JAZZMIN_SETTINGS = {
 
     'related_modal_active': True,
 }
-
-# print the static files
-ruta = f"{LOCAL_CDN}/css/dist/"
-for root, dirs, files in os.walk(ruta):
-    for file in files:
-        print(f'FILES:{os.path.join(root, file)}')

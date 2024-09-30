@@ -12,6 +12,10 @@
                 <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center">
                     {{ lesson.order }}
                 </div>
+                {% elif lesson.id in completed_lessons %}
+                <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
+                    {{ lesson.order }}
+                </div>
                 {% else %}
                 <!-- Other Lessons -->
                 <div class="w-8 h-8 bg-gray-300 text-black rounded-full flex items-center justify-center">

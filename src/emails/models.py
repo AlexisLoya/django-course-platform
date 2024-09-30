@@ -7,6 +7,9 @@ class Email(models.Model):
     email = models.EmailField(unique=True)
     active = models.BooleanField(default=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.email
 
 # class Purchase(models.Model):
 #     email = models.ForeignKey(Email, on_delete=models.SET_NULL, null=True)
@@ -35,5 +38,10 @@ class EmailVerificationEvent(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+    def __str__(self):
+        return self.email
+    
     def get_link(self):
         return f"https://{settings.DJANGO_HOST}/verify/{self.token}/"
+    
+    
