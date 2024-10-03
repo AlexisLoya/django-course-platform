@@ -1,21 +1,23 @@
 {% extends "base.html" %}
-
+{% load crispy_forms_tags %}
 {% block content %}
-<div class="container mx-auto mt-8">
-    <h2 class="text-2xl font-bold mb-4">Perfil de {{ user.username }}</h2>
-    <form method="POST" enctype="multipart/form-data">
+<div class="container mx-auto max-w-2xl mt-10">
+    <h2 class="text-2xl font-bold mb-5 text-center">Tu perfil</h2>
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
         {% csrf_token %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <h3 class="font-semibold">Información de Usuario</h3>
-                {{ u_form.as_p }}
+        <div class="flex flex-col md:flex-row md:space-x-4">
+            <div class="flex-1">
+                <h3 class="font-semibold mb-2">Información de usuario</h3>
+                {{ u_form|crispy }}
             </div>
-            <div>
-                <h3 class="font-semibold">Información del Perfil</h3>
-                {{ p_form.as_p }}
+            <div class="flex-1">
+                <h3 class="font-semibold mb-2">Detalles del perfil</h3>
+                {{ p_form|crispy }}
             </div>
         </div>
-        <button type="submit" class="btn btn-primary mt-4">Actualizar Perfil</button>
+        <button type="submit" class="w-full py-2 px-4 bg-green-600 text-white rounded hover:bg-green-700">
+            Actualizar perfil
+        </button>
     </form>
 </div>
 {% endblock %}

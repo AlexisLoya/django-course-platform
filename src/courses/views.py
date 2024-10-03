@@ -39,18 +39,31 @@ def course_detail_view(request, course_id=None, *args, **kwarg):
 def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs):
     course = get_object_or_404(Course, public_id=course_id)
     
-    # Obtener la última lección vista por el usuario
+    # Si no se proporciona lesson_id, redirigir a la última lección vista o a la primera lección
     if lesson_id is None:
-        last_progress = Progress.objects.filter(user=request.user, lesson__course=course, completed=True).order_by('-timestamp').first()
-        if last_progress:
-            return redirect('lesson_detail', course_id=course_id, lesson_id=last_progress.lesson.public_id)
-        else:
-            first_lesson = Lesson.objects.filter(course=course).order_by('order').first()
-            if first_lesson:
-                return redirect('lesson_detail', course_id=course_id, lesson_id=first_lesson.public_id)
+        if request.user.is_authenticated:
+            # Obtener la última lección completada por el usuario
+            last_progress = Progress.objects.filter(
+                user=request.user, 
+                lesson__course=course, 
+                completed=True
+            ).order_by('-timestamp').first()
+            if last_progress:
+                return redirect('lesson_detail', course_id=course_id, lesson_id=last_progress.lesson.public_id)
             else:
-                raise Http404("No lessons found for this course")
+                # Redirigir a la primera lección del curso
+                first_lesson = Lesson.objects.filter(course=course).order_by('order').first()
+                if first_lesson:
+                    return redirect('lesson_detail', course_id=course_id, lesson_id=first_lesson.public_id)
+                else:
+                    raise Http404("No se encontraron lecciones para este curso.")
+        else:
+            # Usuario no autenticado, redirigir al inicio de sesión
+            messages.info(request, "Debes iniciar sesión para acceder a las lecciones.")
+            request.session['next_url'] = request.path
+            return redirect('login')
 
+    # Obtener el objeto de la lección
     lesson_obj = services.get_lesson_detail(
         course_id=course_id,
         lesson_id=lesson_id
@@ -58,24 +71,33 @@ def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs)
     if lesson_obj is None:
         raise Http404
 
-    email_id_exists = request.session.get('email_id')
-    if lesson_obj.requires_email and not email_id_exists:
+    # Verificar si la lección requiere autenticación
+    if lesson_obj.requires_email and not request.user.is_authenticated:
+        messages.info(request, "Debes iniciar sesión para acceder a esta lección.")
         request.session['next_url'] = request.path
-        return render(request, "courses/email-required.html", {})
+        return redirect('login')
 
+    # Obtener todas las lecciones del curso
     lessons = Lesson.objects.filter(course=lesson_obj.course).order_by('order')
-    completed_lessons = Progress.objects.filter(
-        user=request.user,
-        lesson__in=lessons, 
-        completed=True).values_list('lesson_id', flat=True) if request.user.is_authenticated else []
+
+    # Obtener las lecciones completadas por el usuario
+    if request.user.is_authenticated:
+        completed_lessons = Progress.objects.filter(
+            user=request.user,
+            lesson__in=lessons, 
+            completed=True
+        ).values_list('lesson_id', flat=True)
+    else:
+        completed_lessons = []
 
     context = {
         "object": lesson_obj,
         "lessons": lessons,
         "completed_lessons": completed_lessons,
     }
-    template_name = "courses/lesson.html"
 
+    # Determinar el template a utilizar
+    template_name = "courses/lesson.html"
     if not lesson_obj.is_coming_soon and lesson_obj.status == PublishStatus.PUBLISHED:
         if lesson_obj.lesson_type == LessonType.VIDEO:
             if lesson_obj.has_video:
@@ -89,14 +111,15 @@ def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs)
             else:
                 template_name = "courses/lesson-coming-soon.html"
         elif lesson_obj.lesson_type == LessonType.BLOG:
-            pass
+            pass  # No es necesario cambiar el template
         else:
             template_name = "courses/lesson-coming-soon.html"
     else:
         template_name = "courses/lesson-coming-soon.html"
 
-    # Marcar la lección como vista
-    lesson_obj.mark_as_completed(request.user)
+    # Marcar la lección como completada por el usuario
+    if request.user.is_authenticated:
+        lesson_obj.mark_as_completed(request.user)
 
     return render(request, template_name, context)
 

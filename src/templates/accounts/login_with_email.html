@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto max-w-md mt-10">
+    <h2 class="text-2xl font-bold mb-5 text-center">Bienvenido de nuevo</h2>
+    <p class="mb-5 text-center">Ingresa tu contraseña para acceder a tu cuenta asociada con <strong>{{ email }}</strong>.</p>
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+            <input type="password" name="password" id="password" required
+                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm
+                   focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        </div>
+        <button type="submit" class="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Iniciar sesión
+        </button>
+    </form>
+</div>
+{% endblock %}

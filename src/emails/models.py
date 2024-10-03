@@ -42,6 +42,7 @@ class EmailVerificationEvent(models.Model):
         return self.email
     
     def get_link(self):
-        return f"https://{settings.DJANGO_HOST}/verify/{self.token}/"
+        protocol, port = ("http", ":8000") if settings.DEBUG else ("https", "")
+        return f"{protocol}://{settings.DJANGO_HOST}{port}/accounts/verify-email/{self.token}/"
     
     

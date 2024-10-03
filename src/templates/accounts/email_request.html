@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block head_title %}
+
+Unlock content
+- {{ block.super }}
+    {% endblock head_title %}
+
+{% block content %}
+
+<div class="container mx-auto max-w-md mt-10">
+    <h2 class="text-2xl font-bold mb-5 text-center">Bienvenido a Course Platform</h2>
+    <p class="mb-5 text-center">Ingresa tu correo electrónico para comenzar.</p>
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Continuar
+        </button>
+    </form>
+</div>
+
+
+
+{% endblock content %}

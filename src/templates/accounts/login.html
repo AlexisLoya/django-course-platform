@@ -1,13 +1,28 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container mx-auto mt-8">
     <h2 class="text-2xl font-bold mb-4">Iniciar Sesión</h2>
-    <form method="POST">
+    {% if form.errors %}
+    <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <form method="POST" class="space-y-4">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Ingresar</button>
+        {{ form|crispy }}
+        <button type="submit" class="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Ingresar
+        </button>
     </form>
-    <p class="mt-4">¿No tienes una cuenta? <a href="{% url 'register' %}">Regístrate aquí</a></p>
+    <p class="mt-4">¿No tienes una cuenta? <a href="{% url 'email_request' %}" class="text-blue-600 hover:underline">Regístrate aquí</a></p>
 </div>
 {% endblock %}

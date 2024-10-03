@@ -53,6 +53,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="")
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 DAJNGO_BASE_URL = config('DAJNGO_BASE_URL', default=None)
 DJANGO_HOST = config('DJANGO_HOST', default='', cast=str)
+
 ALLOWED_HOSTS = [
     DJANGO_HOST,
     'localhost',
@@ -79,6 +80,8 @@ THIRD_PARTY_APPS = [
     "tailwind",
     "theme",
     "django_summernote",
+    "crispy_forms",
+    "crispy_tailwind"
 ]
 MY_APPS = [
     "accounts",
@@ -87,6 +90,8 @@ MY_APPS = [
 ]
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+CRISPY_TEMPLATE_PACK = "tailwind"
 TAILWIND_APP_NAME="theme"
 
 INTERNAL_IPS = [
@@ -106,6 +111,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',
 ]
 
 if DEBUG:
@@ -202,6 +211,8 @@ STATIC_ROOT = LOCAL_CDN
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# USER
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # cloudinary video config
 CLOUDINARY_CLOUD_NAME = config("CLOUDINARY_CLOUD_NAME", default="")

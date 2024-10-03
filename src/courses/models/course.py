@@ -6,10 +6,7 @@ from cloudinary.models import CloudinaryField
 from courses.utils import AccessRequirement, PublishStatus, LessonType
 from django.core.exceptions import ValidationError
 from django_summernote.fields import SummernoteTextField
-from django.contrib.auth import get_user_model
-
-
-User = get_user_model()
+from django.conf import settings
 
 
 helpers.cloudinary_init()
@@ -245,7 +242,7 @@ class Lesson(models.Model):
             raise ValidationError("Content field is required for blog/text lessons.")
         
 class Progress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, related_name='progress', on_delete=models.CASCADE)
 
     completed = models.BooleanField(default=False)

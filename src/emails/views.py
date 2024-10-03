@@ -3,10 +3,13 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django_htmx.http import HttpResponseClientRedirect
-
+from django.contrib.auth import login
 from . import services
 
 from .forms import EmailForm
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 EMAIL_ADDRESS = settings.EMAIL_ADDRESS
 
@@ -50,15 +53,15 @@ def email_token_login_view(request):
 def verify_email_token_view(request, token, *args, **kwargs):
     did_verify, msg, email_obj = services.verify_token(token)
     if not did_verify:
-        try:
-            del request.session['email_id']
-        except:
-            pass
         messages.error(request, msg)
         return redirect("/login/")
+    # Crear o obtener el usuario asociado al correo electrónico
+    email = email_obj.email
+    user, created = User.objects.get_or_create(username=email, email=email)
+    # Autenticar y iniciar sesión al usuario
+    user.backend = 'django.contrib.auth.backends.ModelBackend'  # Necesario si se usa autenticación sin contraseña
+    login(request, user)
     messages.success(request, msg)
-    # django -> request.session.get('email_id)
-    request.session['email_id'] = f"{email_obj.id}"
     next_url = request.session.get('next_url') or "/"
     if not next_url.startswith("/"):
         next_url = "/"
