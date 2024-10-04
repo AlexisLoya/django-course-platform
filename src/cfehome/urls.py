@@ -21,6 +21,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('summernote/', include('django_summernote.urls')),
     path('accounts/', include('accounts.urls')),
+    path('exams/', include('exams.urls', namespace='exams')),
 ]
 
 if settings.DEBUG:

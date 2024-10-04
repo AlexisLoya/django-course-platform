@@ -26,6 +26,9 @@
         {% if user.is_authenticated %}
             {% if enrolled %}
                 <p>Ya estás inscrito en este curso.</p>
+                {% if course.exam %}
+                    <a href="{% url 'exams:take_exam' course.exam.public_id %}" class="btn btn-primary">Tomar Examen</a>
+                {% endif %}
                 {% include 'courses/snippets/list-display.html' with queryset=lessons_queryset %}
             {% else %}
                 <form action="{% url 'enroll_in_course' course.public_id %}" method="POST">

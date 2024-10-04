@@ -2,6 +2,7 @@
 {% block content %}
 <div class="container mx-auto mt-8">
     <h2 class="text-2xl font-bold mb-4">Examen de {{ exam.course.title }}</h2>
+    <p>Tiempo restante: <span id="timer">{{ time_limit }}:00</span> minutos</p>
     <form method="POST">
         {% csrf_token %}
         {% for question in questions %}
@@ -20,4 +21,25 @@
         <button type="submit" class="btn btn-primary">Enviar Examen</button>
     </form>
 </div>
+
+<script>
+    // Countdown Timer
+    let timeLeft = {{ time_limit }} * 60; // Convert minutes to seconds
+    let timerElement = document.getElementById('timer');
+
+    let timerInterval = setInterval(function() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        timerElement.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('El tiempo ha expirado. El examen será enviado automáticamente.');
+            document.querySelector('form').submit();
+        }
+
+        timeLeft--;
+    }, 1000);
+</script>
 {% endblock %}
