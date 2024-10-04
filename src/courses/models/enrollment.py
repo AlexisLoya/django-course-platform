@@ -9,6 +9,7 @@ class Enrollment(models.Model):
     course = models.ForeignKey(Course, related_name='enrollments', on_delete=models.CASCADE)
     enrolled_at = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    progress = models.PositiveIntegerField(default=0)
     
     class Meta:
         unique_together = ('user', 'course')

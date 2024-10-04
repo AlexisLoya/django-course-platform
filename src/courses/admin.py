@@ -1,7 +1,7 @@
 import helpers
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Course, Lesson, Enrollment, Progress
+from .models import Course, Lesson, Enrollment, Progress, Exam, Question, Choice, ExamAttempt, StudentAnswer
 from .forms import LessonInlineForm
 
 class LessonInline(admin.StackedInline):
@@ -89,3 +89,16 @@ class ProgressAdmin(admin.ModelAdmin):
     list_display = ['user', 'lesson', 'completed', 'timestamp']
     list_filter = ['completed', 'timestamp']
     search_fields = ['user__username', 'lesson__title']
+    
+
+class ChoiceInline(admin.TabularInline):
+    model = Choice
+    extra = 4
+
+class QuestionAdmin(admin.ModelAdmin):
+    inlines = [ChoiceInline]
+
+admin.site.register(Exam)
+admin.site.register(Question, QuestionAdmin)
+admin.site.register(ExamAttempt)
+admin.site.register(StudentAnswer)

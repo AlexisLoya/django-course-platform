@@ -1,5 +1,5 @@
 from django.db.models import Q
-from .models.course import Course, Lesson
+from .models import Course, Lesson
 from .utils import PublishStatus
 
 
