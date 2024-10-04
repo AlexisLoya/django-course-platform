@@ -4,9 +4,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .utils import PublishStatus, LessonType
-from .models import Course, Lesson, Enrollment, Progress, Exam, Question, Choice, ExamAttempt, StudentAnswer
+from .models import Course, Lesson, Enrollment, Progress, Exam, Question, Choice, ExamAttempt, UserAnswer
 from . import services
-from .forms import ExamForm, QuestionForm, ChoiceFormSet, StudentAnswerForm
+from .forms import ExamForm, QuestionForm, ChoiceFormSet, UserAnswerForm
 from django.forms import modelformset_factory
 from django.utils import timezone
 
@@ -202,7 +202,7 @@ def take_exam_view(request, exam_id):
             if not selected_choice_id:
                 continue
             selected_choice = Choice.objects.get(id=selected_choice_id)
-            StudentAnswer.objects.create(
+            UserAnswer.objects.create(
                 attempt=attempt,
                 question=question,
                 selected_choice=selected_choice

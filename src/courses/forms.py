@@ -1,5 +1,5 @@
 from django import forms
-from .models import Lesson, Exam, Question, Choice, StudentAnswer
+from .models import Lesson, Exam, Question, Choice, UserAnswer
 from django_summernote.widgets import SummernoteWidget
 
 class LessonInlineForm(forms.ModelForm):
@@ -29,9 +29,9 @@ ChoiceFormSet = forms.inlineformset_factory(
     widgets={'is_correct': forms.RadioSelect}
 )
 
-class StudentAnswerForm(forms.ModelForm):
+class UserAnswerForm(forms.ModelForm):
     class Meta:
-        model = StudentAnswer
+        model = UserAnswer
         fields = ['selected_choice']
         widgets = {
             'selected_choice': forms.RadioSelect

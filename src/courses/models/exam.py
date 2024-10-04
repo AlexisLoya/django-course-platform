@@ -60,7 +60,7 @@ class ExamAttempt(models.Model):
             self.save()
     
 
-class StudentAnswer(models.Model):
+class UserAnswer(models.Model):
     attempt = models.ForeignKey(ExamAttempt, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     selected_choice = models.ForeignKey(Choice, on_delete=models.CASCADE)

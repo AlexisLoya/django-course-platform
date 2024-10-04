@@ -1,7 +1,7 @@
 import helpers
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Course, Lesson, Enrollment, Progress, Exam, Question, Choice, ExamAttempt, StudentAnswer
+from .models import Course, Lesson, Enrollment, Progress, Exam, Question, Choice, ExamAttempt, UserAnswer
 from .forms import LessonInlineForm
 
 class LessonInline(admin.StackedInline):
@@ -101,4 +101,4 @@ class QuestionAdmin(admin.ModelAdmin):
 admin.site.register(Exam)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(ExamAttempt)
-admin.site.register(StudentAnswer)
+admin.site.register(UserAnswer)
