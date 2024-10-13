@@ -31,7 +31,7 @@
                 {% endif %}
                 {% include 'courses/snippets/list-display.html' with queryset=lessons_queryset %}
             {% else %}
-                <form action="{% url 'enroll_in_course' course.public_id %}" method="POST">
+                <form action="{% url 'courses:enroll_in_course' course.public_id %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-primary">Inscribirse en el Curso</button>
                 </form>

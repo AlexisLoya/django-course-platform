@@ -6,4 +6,5 @@ app_name = 'exams'
 urlpatterns = [
     path('<str:exam_public_id>/take/', views.take_exam_view, name='take_exam'),
     path('result/<str:attempt_public_id>/', views.exam_result_view, name='exam_result'),
+    path('not-allowed/<str:course_id>/', views.exam_not_allowed_view, name='exam_not_allowed'),
 ]

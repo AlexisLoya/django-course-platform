@@ -35,59 +35,66 @@ def course_detail_view(request, course_id=None, *args, **kwarg):
     }
     return render(request, "courses/detail.html", context)
 
-def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs):
-    course = get_object_or_404(Course, public_id=course_id)
-    
-    # Si no se proporciona lesson_id, redirigir a la última lección vista o a la primera lección
-    if lesson_id is None:
-        if request.user.is_authenticated:
-            # Obtener la última lección completada por el usuario
-            last_progress = Progress.objects.filter(
-                user=request.user, 
-                lesson__course=course, 
-                completed=True
-            ).order_by('-timestamp').first()
-            if last_progress:
-                return redirect('lesson_detail', course_id=course_id, lesson_id=last_progress.lesson.public_id)
-            else:
-                # Redirigir a la primera lección del curso
-                first_lesson = Lesson.objects.filter(course=course).order_by('order').first()
-                if first_lesson:
-                    return redirect('lesson_detail', course_id=course_id, lesson_id=first_lesson.public_id)
-                else:
-                    raise Http404("No se encontraron lecciones para este curso.")
-        else:
-            # Usuario no autenticado, redirigir al inicio de sesión
-            messages.info(request, "Debes iniciar sesión para acceder a las lecciones.")
-            request.session['next_url'] = request.path
-            return redirect('login')
+def get_last_completed_lesson(user, course):
+    return Progress.get_last_completed_lesson(user=user, course=course)
 
-    # Obtener el objeto de la lección
-    lesson_obj = services.get_lesson_detail(
-        course_id=course_id,
-        lesson_id=lesson_id
-    )
-    if lesson_obj is None:
-        raise Http404
+def get_first_lesson(course):
+    return Lesson.objects.filter(course=course).order_by('order').first()
 
-    # Verificar si la lección requiere autenticación
-    if lesson_obj.requires_email and not request.user.is_authenticated:
-        messages.info(request, "Debes iniciar sesión para acceder a esta lección.")
+def redirect_to_lesson(course_id, lesson):
+    if lesson:
+        return redirect('lesson_detail', course_id=course_id, lesson_id=lesson.public_id)
+    else:
+        raise Http404("No se encontraron lecciones para este curso.")
+
+def handle_authentication(request):
+    if not request.user.is_authenticated:
+        messages.info(request, "Debes iniciar sesión para acceder a las lecciones.")
         request.session['next_url'] = request.path
         return redirect('login')
 
-    # Obtener todas las lecciones del curso
-    lessons = Lesson.objects.filter(course=lesson_obj.course).order_by('order')
+def get_completed_lessons(user, lessons):
+    if user.is_authenticated:
+        return Progress.objects.filter(user=user, lesson__in=lessons, completed=True).values_list('lesson_id', flat=True)
+    return []
 
-    # Obtener las lecciones completadas por el usuario
-    if request.user.is_authenticated:
-        completed_lessons = Progress.objects.filter(
-            user=request.user,
-            lesson__in=lessons, 
-            completed=True
-        ).values_list('lesson_id', flat=True)
-    else:
-        completed_lessons = []
+def get_template_name(lesson_obj):
+    if not lesson_obj.is_coming_soon and lesson_obj.status == PublishStatus.PUBLISHED:
+        if lesson_obj.lesson_type == LessonType.VIDEO:
+            if lesson_obj.has_video:
+                return "courses/lesson.html"
+            else:
+                return "courses/lesson-coming-soon.html"
+        elif lesson_obj.lesson_type == LessonType.BLOG:
+            return "courses/lesson.html"
+        else:
+            return "courses/lesson-coming-soon.html"
+    return "courses/lesson-coming-soon.html"
+
+
+def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs):
+    course = get_object_or_404(Course, public_id=course_id)
+    
+    if lesson_id is None:
+        if request.user.is_authenticated:
+            last_progress = get_last_completed_lesson(request.user, course)
+            if last_progress:
+                return redirect_to_lesson(course_id, last_progress.lesson)
+            else:
+                first_lesson = get_first_lesson(course)
+                return redirect_to_lesson(course_id, first_lesson)
+        else:
+            return handle_authentication(request)
+
+    lesson_obj = services.get_lesson_detail(course_id=course_id, lesson_id=lesson_id)
+    if lesson_obj is None:
+        raise Http404
+
+    if lesson_obj.requires_email and not request.user.is_authenticated:
+        return handle_authentication(request)
+
+    lessons = Lesson.objects.filter(course=lesson_obj.course).order_by('order')
+    completed_lessons = get_completed_lessons(request.user, lessons)
 
     context = {
         "object": lesson_obj,
@@ -95,30 +102,21 @@ def lesson_detail_view(request, course_id=None, lesson_id=None, *args, **kwargs)
         "completed_lessons": completed_lessons,
     }
 
-    # Determinar el template a utilizar
-    template_name = "courses/lesson.html"
-    if not lesson_obj.is_coming_soon and lesson_obj.status == PublishStatus.PUBLISHED:
-        if lesson_obj.lesson_type == LessonType.VIDEO:
-            if lesson_obj.has_video:
-                video_embed_html = helpers.get_cloudinary_video_object(
-                    lesson_obj,
-                    field_name='video',
-                    as_html=True,
-                    width=1250
-                )
-                context['video_embed'] = video_embed_html
-            else:
-                template_name = "courses/lesson-coming-soon.html"
-        elif lesson_obj.lesson_type == LessonType.BLOG:
-            pass  # No es necesario cambiar el template
-        else:
-            template_name = "courses/lesson-coming-soon.html"
-    else:
-        template_name = "courses/lesson-coming-soon.html"
+    template_name = get_template_name(lesson_obj)
+    if template_name == "courses/lesson.html" and lesson_obj.lesson_type == LessonType.VIDEO and lesson_obj.has_video:
+        video_embed_html = helpers.get_cloudinary_video_object(
+            lesson_obj,
+            field_name='video',
+            as_html=True,
+            width=1250
+        )
+        context['video_embed'] = video_embed_html
 
-    # Marcar la lección como completada por el usuario
     if request.user.is_authenticated:
         lesson_obj.mark_as_completed(request.user)
+        enrollment, _ = Enrollment.objects.get_or_create(user=request.user, course=course)
+        enrollment.progress = enrollment.calculate_course_progress()
+        enrollment.save()
 
     return render(request, template_name, context)
 
@@ -127,4 +125,4 @@ def enroll_in_course(request, course_id=None, *args, **kwargs):
     course = get_object_or_404(Course, public_id=course_id)
     Enrollment.objects.get_or_create(user=request.user, course=course)
     messages.success(request, f"Te has inscrito en {course.title}")
-    return redirect('course_detail', course_id=course.public_id)
+    return redirect('courses:course_detail', course_id=course.public_id)

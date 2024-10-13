@@ -8,6 +8,6 @@
     {% else %}
         <p class="text-red-600 font-semibold">Lo siento, no has alcanzado el puntaje necesario para aprobar.</p>
     {% endif %}
-    <a href="{% url 'course_detail' attempt.exam.course_public_id %}" class="text-blue-600 hover:underline">Volver al curso</a>
+    <a href="{% url 'courses:course_detail' attempt.exam.course.public_id %}" class="text-blue-600 hover:underline">Volver al curso</a>
 </div>
 {% endblock %}

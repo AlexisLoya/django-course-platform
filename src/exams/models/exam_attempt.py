@@ -25,3 +25,8 @@ class ExamAttempt(models.Model):
         if self.score is not None:
             self.passed = self.score >= self.exam.passing_percentage
             self.save()
+
+    @staticmethod
+    def is_exam_completed(user, course):
+        taken = ExamAttempt.objects.filter(user=user, exam__course=course).first()
+        return True if taken and taken.passed else False

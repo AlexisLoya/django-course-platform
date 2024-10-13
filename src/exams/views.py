@@ -63,18 +63,18 @@ def take_exam_view(request, exam_public_id):
     # Check if the user has completed 75% of the course
     enrollment = get_object_or_404(Enrollment, user=request.user, course=course)
     progress = enrollment.progress  # Assuming you track progress in Enrollment model
-    if progress < 75:
-        return render(request, 'exams/exam_not_allowed.html', {'course': course})
+    if progress < 70:
+        return redirect('exams:exam_not_allowed', course_id=course.public_id)
 
     # Check if the user has already passed the exam
     if ExamAttempt.objects.filter(exam=exam, user=request.user, passed=True).exists():
-        messages.error(request, "Ya has aprobado este examen y no puedes volver a intentarlo.")
-        return redirect('course_detail', course_id=course.public_id)
+        print("Ya has aprobado este examen y no puedes volver a intentarlo.")
+        return redirect('courses:course_detail', course_id=course.public_id)
 
     # Check if the user has finished the course
     if enrollment.progress == 100:
-        messages.error(request, "Ya has completado este curso y no puedes volver a tomar el examen.")
-        return redirect('course_detail', course_id=course.public_id)
+        print("Ya has completado este curso y no puedes volver a tomar el examen.")
+        return redirect('courses:course_detail', course_id=course.public_id)
 
     # Limit the number of attempts per day
     today = timezone.now().date()
@@ -84,25 +84,25 @@ def take_exam_view(request, exam_public_id):
         date_started__date=today
     ).count()
     if attempts_today >= exam.tries_allowed_per_day:
-        messages.error(request, f"Has alcanzado el número máximo de intentos permitidos por día ({exam.tries_allowed_per_day}).")
-        return redirect('course_detail', course_id=course.public_id)
+        print(f"Has alcanzado el número máximo de intentos permitidos por día ({exam.tries_allowed_per_day}).")
+        return redirect('courses:course_detail', course_id=course.public_id)
 
     if request.method == 'POST':
         # Enforce time limit
         attempt_id = request.session.get('exam_attempt_id')
         if not attempt_id:
-            messages.error(request, "No se encontró una sesión de examen válida.")
-            return redirect('course_detail', course_id=course.public_id)
+            print("No se encontró una sesión de examen válida.")
+            return redirect('courses:course_detail', course_id=course.public_id)
 
         attempt = get_object_or_404(ExamAttempt, id=attempt_id, user=request.user)
         time_elapsed = (timezone.now() - attempt.date_started).total_seconds() / 60  # in minutes
 
         if time_elapsed > exam.time_limit:
-            messages.error(request, "El tiempo límite del examen ha expirado.")
+            print("El tiempo límite del examen ha expirado.")
             attempt.date_ended = timezone.now()
             attempt.save()
             del request.session['exam_attempt_id']
-            return redirect('exam_result', attempt_public_id=attempt.public_id)
+            return redirect('exams:exam_result', attempt_public_id=attempt.public_id)
 
         total_questions = exam.questions.count()
         correct_answers = 0
@@ -128,7 +128,7 @@ def take_exam_view(request, exam_public_id):
         attempt.save()
 
         del request.session['exam_attempt_id']
-        return redirect('exam_result', attempt_public_id=attempt.public_id)
+        return redirect('exams:exam_result', attempt_public_id=attempt.public_id)
 
     else:
         # Start the exam attempt
@@ -148,3 +148,10 @@ def take_exam_view(request, exam_public_id):
 def exam_result_view(request, attempt_public_id):
     attempt = get_object_or_404(ExamAttempt, public_id=attempt_public_id, user=request.user)
     return render(request, 'exams/exam_result.html', {'attempt': attempt})
+
+@login_required
+def exam_not_allowed_view(request, course_id):
+    course = get_object_or_404(Course, public_id=course_id)
+    progress = Enrollment.objects.get(user=request.user, course=course).progress
+    print(f'progress: {progress}')
+    return render(request, 'exams/exam_not_allowed.html', {'course': course, 'progress': progress})

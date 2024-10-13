@@ -17,7 +17,8 @@ urlpatterns = [
     path('hx/login/', email_token_login_view),
     path('hx/logout/', logout_btn_hx_view),
     path('verify/<uuid:token>/', verify_email_token_view),
-    path("courses/", include("courses.urls")),
+    path("courses/", include("courses.urls", namespace='courses')),
+
     path("admin/", admin.site.urls),
     path('summernote/', include('django_summernote.urls')),
     path('accounts/', include('accounts.urls')),

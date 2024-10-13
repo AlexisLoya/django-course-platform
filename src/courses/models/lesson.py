@@ -137,3 +137,10 @@ class Progress(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.lesson.title} - {'Completed' if self.completed else 'Incomplete'}"
     
+    @staticmethod
+    def get_last_completed_lesson(user, course):
+        return Progress.objects.filter(
+            user=user,
+            lesson__course=course,
+            completed=True
+        ).order_by('-timestamp').first()

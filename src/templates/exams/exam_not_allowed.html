@@ -3,6 +3,9 @@
 <div class="container mx-auto mt-8 text-center">
     <h2 class="text-2xl font-bold mb-4">No puedes tomar este examen aún</h2>
     <p>Debes completar al menos el 75% del curso <strong>{{ course.title }}</strong> para poder presentar el examen.</p>
-    <a href="{% url 'course_detail' course.public_id %}" class="text-blue-600 hover:underline">Volver al curso</a>
+    <p>Has completado el <strong>{{ progress }}%</strong> del curso.</p>
+    <a href="{% url 'courses:course_detail' course.public_id %}" class="text-blue-600 hover:underline">Volver al curso</a>
+    {% comment %} <a href="{% url 'courses:course_detail' attempt.exam.course.public_id %}" class="text-blue-600 hover:underline">Volver al curso</a> {% endcomment %}
+
 </div>
 {% endblock %}
